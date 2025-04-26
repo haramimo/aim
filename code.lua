@@ -11,9 +11,9 @@ Aimbot.Sensitivity = 0
 Aimbot.TriggerKey = "MouseButton2"
 Aimbot.Toggle = false
 Aimbot.LockPart = "Head"
-Aimbot.FOVRadius = 100 -- Initial FOV size
-Aimbot.ShowFOV = true -- Default: show FOV
-Aimbot.FOVColor = Color3.fromRGB(255, 255, 255) -- Default FOV color
+Aimbot.FOVRadius = 100
+Aimbot.ShowFOV = true
+Aimbot.FOVColor = Color3.fromRGB(255, 255, 255)
 
 -- Drawing Circle
 local FOV = Drawing.new("Circle")
@@ -122,6 +122,7 @@ end
 
 Aimbot.SetFOVColor = function(color)
     Aimbot.FOVColor = color
+    FOV.Color = color  -- Update the FOV circle color dynamically
 end
 
 Aimbot.SetFOVRadius = function(radius)
