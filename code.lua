@@ -1,23 +1,24 @@
---// Modular Mini Aimbot (by ChatGPT fix)
+--// Mini Aimbot by ChatGPT (Perfect Lock Color Behavior)
 
 local Players, RunService, UserInputService, Camera = game:GetService("Players"), game:GetService("RunService"), game:GetService("UserInputService"), workspace.CurrentCamera
 local LocalPlayer = Players.LocalPlayer
-local Aimbot = {}
-local Running, Typing, Locking = false, false, nil
+local Aimbot, Running, Typing, Locking = {}, false, false, nil
 
 -- Settings
-Aimbot.Enabled = false
+Aimbot.Enabled = true
 Aimbot.TeamCheck = false
 Aimbot.Sensitivity = 0
 Aimbot.TriggerKey = "MouseButton2"
-Aimbot.ToggleMode = false
+Aimbot.Toggle = false
 Aimbot.LockPart = "Head"
-Aimbot.FOVRadius = 100
+Aimbot.FOVRadius = 100 -- Initial FOV size
+Aimbot.ShowFOV = true -- Default: show FOV
+Aimbot.FOVColor = Color3.fromRGB(255, 255, 255) -- Default FOV color
 
 -- Drawing Circle
 local FOV = Drawing.new("Circle")
-FOV.Visible = false
-FOV.Color = Color3.fromRGB(255, 255, 255)
+FOV.Visible = Aimbot.ShowFOV
+FOV.Color = Aimbot.FOVColor
 FOV.Radius = Aimbot.FOVRadius
 FOV.Thickness = 1
 FOV.Filled = false
@@ -45,7 +46,7 @@ local function GetClosest()
     return Target
 end
 
--- RenderStepped Connection
+-- Aim Function
 RunService.RenderStepped:Connect(function()
     FOV.Position = UserInputService:GetMouseLocation()
     if Running and Aimbot.Enabled then
@@ -57,35 +58,36 @@ RunService.RenderStepped:Connect(function()
             else
                 Camera.CFrame = CFrame.new(Camera.CFrame.Position, Pos)
             end
-            FOV.Color = Color3.fromRGB(255, 70, 70)
+            FOV.Color = Color3.fromRGB(255, 70, 70) -- Red when locked
         else
-            FOV.Color = Color3.fromRGB(255, 255, 255)
+            FOV.Color = Aimbot.FOVColor
         end
     else
-        FOV.Color = Color3.fromRGB(255, 255, 255)
+        FOV.Color = Aimbot.FOVColor
     end
+
+    -- FOV Visible Check
+    FOV.Visible = Aimbot.ShowFOV
 end)
 
 -- Input Handling
 UserInputService.InputBegan:Connect(function(input)
     if Typing then return end
     pcall(function()
-        if Aimbot.Enabled then
-            if Aimbot.TriggerKey:find("MouseButton") then
-                if input.UserInputType == Enum.UserInputType[Aimbot.TriggerKey] then
-                    if Aimbot.ToggleMode then
-                        Running = not Running
-                    else
-                        Running = true
-                    end
+        if Aimbot.TriggerKey:find("MouseButton") then
+            if input.UserInputType == Enum.UserInputType[Aimbot.TriggerKey] then
+                if Aimbot.Toggle then
+                    Running = not Running
+                else
+                    Running = true
                 end
-            else
-                if input.KeyCode == Enum.KeyCode[Aimbot.TriggerKey] then
-                    if Aimbot.ToggleMode then
-                        Running = not Running
-                    else
-                        Running = true
-                    end
+            end
+        else
+            if input.KeyCode == Enum.KeyCode[Aimbot.TriggerKey] then
+                if Aimbot.Toggle then
+                    Running = not Running
+                else
+                    Running = true
                 end
             end
         end
@@ -95,45 +97,36 @@ end)
 UserInputService.InputEnded:Connect(function(input)
     if Typing then return end
     pcall(function()
-        if Aimbot.Enabled then
-            if Aimbot.TriggerKey:find("MouseButton") then
-                if input.UserInputType == Enum.UserInputType[Aimbot.TriggerKey] then
-                    if not Aimbot.ToggleMode then
-                        Running = false
-                        Locking = nil
-                    end
+        if Aimbot.TriggerKey:find("MouseButton") then
+            if input.UserInputType == Enum.UserInputType[Aimbot.TriggerKey] then
+                if not Aimbot.Toggle then
+                    Running = false
+                    Locking = nil
                 end
-            else
-                if input.KeyCode == Enum.KeyCode[Aimbot.TriggerKey] then
-                    if not Aimbot.ToggleMode then
-                        Running = false
-                        Locking = nil
-                    end
+            end
+        else
+            if input.KeyCode == Enum.KeyCode[Aimbot.TriggerKey] then
+                if not Aimbot.Toggle then
+                    Running = false
+                    Locking = nil
                 end
             end
         end
     end)
 end)
 
--- Functions
-function Aimbot.SetFOVVisible(state)
-    FOV.Visible = state
+-- API functions to control FOV visibility, color, and radius
+Aimbot.SetFOVVisible = function(state)
+    Aimbot.ShowFOV = state
 end
 
-function Aimbot.SetFOVColor(color)
-    FOV.Color = color
+Aimbot.SetFOVColor = function(color)
+    Aimbot.FOVColor = color
 end
 
-function Aimbot.SetFOVRadius(radius)
+Aimbot.SetFOVRadius = function(radius)
     Aimbot.FOVRadius = radius
-    FOV.Radius = radius
+    FOV.Radius = radius  -- Update the FOV circle radius dynamically
 end
-
--- Cleanup if needed
-game:GetService("CoreGui").AncestryChanged:Connect(function(_, parent)
-    if not parent then
-        FOV:Remove()
-    end
-end)
 
 return Aimbot
